@@ -1,32 +1,19 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from MainApp.models import Item
 from django.core.exceptions import ObjectDoesNotExist
 
+
 # Create your views here.
 
 
-
-
-# items = [
-#     {"id": 1, "name": "Кроссовки abibas", "quantity": 10},
-#     {"id": 2, "name": "Куртка кожаная", "quantity": 5},
-#     {"id": 3, "name": "Coca-cola 1 литр", "quantity": 20},
-#     {"id": 4, "name": "Картофель фри", "quantity": 15},
-#     {"id": 5, "name": "Кепка", "quantity": 8},
-]
-
-
 def home(request):
-    # text = """<h1>"Изучаем django"</h1>
-    #           <strong>Автор</strong>: <i>Шиховцов В.В.</i>
-    #             """
-    # return HttpResponse(text)
     context = {
-        "name": "Петров Иван Николаевич", 
+        "name": "Петров Иван Николаевич",
         "email": "my_mail@mail.ru"
     }
-    return render(request, "index.html", context)
+    return render(request, "index.html", context)        
+
 
 def about(request):
     author = {
@@ -35,23 +22,41 @@ def about(request):
     "Фамилия": "Иванов",
     "телефон": "8-923-600-01-02",
     "email": "vasya@mail.ru"
-}
+
+    }
+    result = f"""
+    <header>
+    /<a href="/">Home</a> / <a href="/items"> Items</a> / <a href="/about"> About</a>
+    </header>
+
+    Имя: <b>{author['Имя']}</b><br>
+    Отчество: <b>{author['Отчество']}</b><br>
+    Фамилия: <b>{author['Фамилия']}</b><br>
+    телефон: <b>{author['телефон']}</b><br>
+    email: <b>{author['email']}</b><br><br>
+    <a href='/'> Home </a>
+    """
     return HttpResponse(result)
 
-def get_item(request, id):
-    try:
-        item = Item.objects.id
-    return HttpResponse("Товар не найден")
 
+# url /item/1
+# url /item/2
+def get_item(request, item_id):
+    """ По указанному id возвращает имя и количество"""
+    try:
+        item = Item.objects.get(id=item_id)
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound(f'Item with id = {item_id} not found.')
+    else:
+        context = {
+            "item": item
+        }
+        return render(request, "item-page.html", context)
+    
 
 def items_list(request):
-    # result = "<h2>Список товаров</h2>"
-    # for item in items:
-    #     result += f"""<li><a href="/item/{item["id"]}">{item['name']}</li>"""
-    # result += '</ol>'
-    # return HttpResponse(result)
     items = Item.objects.all()
     context = {
-        'items': items
-        }
-    return render(request, 'all_items.html', context)
+        "items": items
+    }
+    return render(request, "items-list.html", context) 
